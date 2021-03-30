@@ -5,28 +5,52 @@ import recordVideo
 import os
 import time
 
-imageName: str = "./bird2.JPG"
-outputName: str = "./upscaled.jpg"
-path: str = "models/EDSR_x4.pb"
-model: str = "edsr"
-model_scale: int = 4
 
-# upscale single image func
-def upscale_image(image_name, model_path, model_name, scale, output_name):
-    # Create an SR object - only function that differs from c++ code
-    sr = cv2.dnn_superres.DnnSuperResImpl_create()
-    # Read image
-    image = cv2.imread(image_name)
-    # Read the desired model
-    sr.readModel(model_path)
-    # Set the desired model and scale to get correct pre- and post-processing
-    sr.setModel(model_name, scale)
-    # Upscale the image
-    result = sr.upsample(image)
-    # Save the image
-    cv2.imwrite(output_name, result)
+class Image(cv2):
+
+    name: str
+    resolution: str
+    width: int
+    height: int
+    model_path: str
+    model_name: str
+    model_scale: int
+    output_name: str
+
+    def __init__(self, name, resolution, width, height, model_path,  model_name, model_scale, output_name):
+        self.name = name
+        self.resolution = resolution
+        self.width = width
+        self.height = height
+        self.model_path = model_path
+        self.model_name = model_name
+        self.model_scale = model_scale
+        self.output_name = output_name
+
+    def read_image(self):
+        return self.imread(self.name)
+
+    def upscale_image(self):
+        global sr
+        sr = cv2.dnn_superres.DnnSuperResImpl_create()
+        image = self.read_image()
+        sr.readModel(self.model_path)
+        sr.setModel(self.model_name, self.model_scale)
+        print('Shape of Original Image: {}'.format(image.shape))
+        return sr.upsample(image)
+
+    def save_upscaled_image(self,):
+        self.imwrite(self.output_name, self.upscale_image())
+        print('Shape of Super Resolution Image: {}'.format(self.upscale_image().shape))
 
 
+# imageName: str = "./bird2.JPG"
+# outputName: str = "./upscaled.png"
+# path: str = "models/EDSR_x4.pb"
+# model: str = "edsr"
+# modelscale: int = 4
+# model for video : ESPCN
+# def resize_image(image_name, output_size):
 # control de la size ?
 # scale ?
 # matplotlib ?

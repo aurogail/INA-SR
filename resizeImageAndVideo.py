@@ -1,5 +1,6 @@
 import os
 import cv2
+from switchcase import switch
 
 # cap = cv2.VideoCapture(0)
 
@@ -37,15 +38,51 @@ def get_dims(capture, res="1080p"):
     return width, height
 
 
-def resize_image(image, original_size, new_size, scale_percent):
+def resize_image(image, original_size, new_size, scale_percent=100):
     # for standard size
     # src = cv2.imread('D:/cv2-resize-image-original.png', cv2.IMREAD_UNCHANGED)
-    # percent by which the image is resized
-    scale_percent = 50
-    # calculate the 50 percent of original dimensions
-    width = int(image.shape[1] * scale_percent / 100)
-    height = int(image.shape[0] * scale_percent / 100)
+
+    global width, height
+
+    # size_factor = int(new_size/image.shape[1])
+
+
+    if new_size in STD_DIMENSIONS:
+        width, height = STD_DIMENSIONS[new_size]
+    elif 0 < scale_percent < 100:
+        width = int(image.shape[1] * scale_percent / 100)
+        height = int(image.shape[0] * scale_percent / 100)
+
     # dsize
     dsize = (width, height)
     # resize image
     return cv2.resize(image, dsize)
+
+
+def scale_choice(image, new_size):
+    size_factor = int(new_size/image.shape[1])
+
+    with switch(size_factor) as case:
+        if case(size_factor) <= 2:
+            return 2
+
+        if 2 < case(size_factor) <= 3:
+            return 3
+
+        if 3 < case(size_factor) <= 4:
+            return 4
+
+        if 4 < case(size_factor) <= 8:
+            return 4
+
+
+def model_choice(type_of_image, scale):
+    with switch(type_of_image) as case:
+        if case("video"):
+            return "espcn"
+        if case("image"):
+            if scale <= 4:
+                return "edsr"
+            else:
+                return "lapsrn"
+

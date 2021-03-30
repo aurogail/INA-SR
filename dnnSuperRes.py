@@ -1,4 +1,5 @@
 import cv2
+import resizeImageAndVideo as rsiv
 import numpy as np
 import matplotlib.pyplot as plt
 import recordVideo
@@ -10,6 +11,7 @@ class Image(cv2):
 
     name: str
     resolution: str
+    output_res: str
     width: int
     height: int
     model_path: str
@@ -17,9 +19,10 @@ class Image(cv2):
     model_scale: int
     output_name: str
 
-    def __init__(self, name, resolution, width, height, model_path,  model_name, model_scale, output_name):
+    def __init__(self, name, resolution, output_res, width, height, model_path,  model_name, model_scale, output_name):
         self.name = name
         self.resolution = resolution
+        self.output_res = output_res
         self.width = width
         self.height = height
         self.model_path = model_path
@@ -39,6 +42,8 @@ class Image(cv2):
         print('Shape of Original Image: {}'.format(image.shape))
         return sr.upsample(image)
 
+   #  def resize_image(self):
+
     def save_upscaled_image(self):
         self.imwrite(self.output_name, self.upscale_image())
         print('Shape of Super Resolution Image: {}'.format(self.upscale_image().shape))
@@ -54,5 +59,4 @@ class Image(cv2):
 # control de la size ?
 # scale ?
 # matplotlib ?
-
 

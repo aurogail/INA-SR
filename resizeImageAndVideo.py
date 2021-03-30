@@ -31,10 +31,11 @@ def get_video_type(fileName):
 
 
 def get_dims(capture, res="1080p"):
+    global width, height
     width, height = STD_DIMENSIONS["480p"]
     if res in STD_DIMENSIONS:
         width, height = STD_DIMENSIONS[res]
-    change_resolution(capture, width, height)
+        change_resolution(capture, width, height)
     return width, height
 
 
@@ -45,7 +46,6 @@ def resize_image(image, original_size, new_size, scale_percent=100):
     global width, height
 
     # size_factor = int(new_size/image.shape[1])
-
 
     if new_size in STD_DIMENSIONS:
         width, height = STD_DIMENSIONS[new_size]
@@ -72,7 +72,7 @@ def scale_choice(image, new_size):
         if 3 < case(size_factor) <= 4:
             return 4
 
-        if 4 < case(size_factor) <= 8:
+        if case(size_factor) > 4:
             return 8
 
 

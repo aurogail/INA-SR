@@ -49,6 +49,7 @@ def get_dims(cap, res="1080p"):
     change_resolution(cap, width, height)
     return width, height
 
+
 """def checkFIleName(fileName):
     if os.path.isfile(fileName):
         fileNameNew = 'video.avi'
@@ -60,7 +61,6 @@ def recVideo(fileName, resolution):
     cap = cv2.VideoCapture(0)
     dim = get_dims(cap, res=resolution)
     videoTypeCV2 = get_video_type(fileName)
-
     out = cv2.VideoWriter(fileName, videoTypeCV2, fps, dim)
 
     """dans cv2, set -> 3 = width et 4 = height"""

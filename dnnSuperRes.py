@@ -6,7 +6,7 @@ import os
 import time
 
 imageName: str = "./bird2.JPG"
-outputName: str = "./upscaled.png"
+outputName: str = "./upscaled.jpg"
 path: str = "models/EDSR_x4.pb"
 model: str = "edsr"
 model_scale: int = 4

@@ -1,5 +1,10 @@
 import cv2
+import numpy as np
+import matplotlib.pyplot as plt
 import recordVideo
+import os
+import time
+
 imageName: str = "./bird2.JPG"
 outputName: str = "./upscaled.png"
 path: str = "models/EDSR_x4.pb"
@@ -13,7 +18,6 @@ def upscale_image(image_name, model_path, model_name, scale, output_name):
     # Read image
     image = cv2.imread(image_name)
     # Read the desired model
-
     sr.readModel(model_path)
     # Set the desired model and scale to get correct pre- and post-processing
     sr.setModel(model_name, scale)
@@ -23,5 +27,8 @@ def upscale_image(image_name, model_path, model_name, scale, output_name):
     cv2.imwrite(output_name, result)
 
 
+# control de la size ?
+# scale ?
+# matplotlib ?
 
 

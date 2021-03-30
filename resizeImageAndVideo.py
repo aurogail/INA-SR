@@ -73,7 +73,7 @@ def scale_choice(image, new_size):
             return 4
 
         if 4 < case(size_factor) <= 8:
-            return 4
+            return 8
 
 
 def model_choice(type_of_image, scale):
@@ -86,3 +86,6 @@ def model_choice(type_of_image, scale):
             else:
                 return "lapsrn"
 
+
+def construct_model_path(model, scale):
+    return os.path.join("./models/", model.upper() + "_x" + scale + ".pb")

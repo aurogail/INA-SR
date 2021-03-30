@@ -11,7 +11,7 @@ path: str = "models/EDSR_x4.pb"
 model: str = "edsr"
 model_scale: int = 4
 
-
+# upscale single image func
 def upscale_image(image_name, model_path, model_name, scale, output_name):
     # Create an SR object - only function that differs from c++ code
     sr = cv2.dnn_superres.DnnSuperResImpl_create()

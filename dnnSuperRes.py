@@ -39,7 +39,7 @@ class Image(cv2):
         print('Shape of Original Image: {}'.format(image.shape))
         return sr.upsample(image)
 
-    def save_upscaled_image(self,):
+    def save_upscaled_image(self):
         self.imwrite(self.output_name, self.upscale_image())
         print('Shape of Super Resolution Image: {}'.format(self.upscale_image().shape))
 

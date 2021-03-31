@@ -94,3 +94,5 @@ class UpscaleImage(cv2):
 # scale ?
 # matplotlib ?
 
+# boutons => creer des instances avec les choix
+

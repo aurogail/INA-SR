@@ -79,7 +79,10 @@ def scale_choice(image, new_size):
 def model_choice(type_of_image, scale):
     with switch(type_of_image) as case:
         if case("video"):
-            return "espcn"
+            if scale <= 4:
+                return "espcn"
+            else:
+                return "lapsrn"
         if case("image"):
             if scale <= 4:
                 return "edsr"
@@ -88,4 +91,7 @@ def model_choice(type_of_image, scale):
 
 
 def construct_model_path(model, scale):
-    return os.path.join("./models/", model.upper() + "_x" + scale + ".pb")
+    if model == "lapsrn":
+        return os.path.join("./models/LapSRN_x" + scale + ".pb")
+    else :
+        return os.path.join("./models/", model.upper() + "_x" + scale + ".pb")

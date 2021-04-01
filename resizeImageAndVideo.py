@@ -54,7 +54,7 @@ def get_dims(capture, res="1080p"):
     return width, height
 
 
-def resize_image(image, original_size, new_size, scale_percent=100):
+def resize_image(image, new_size, scale_percent=100):
     # for standard size
     # src = cv2.imread('D:/cv2-resize-image-original.png', cv2.IMREAD_UNCHANGED)
 
@@ -71,7 +71,19 @@ def resize_image(image, original_size, new_size, scale_percent=100):
     # dsize
     dsize = (width, height)
     # resize image
-    return cv2.resize(image, dsize)
+    cv2.resize(image, dsize)
+
+
+def resize_video(cap, new_size, scale_percent=100):
+    global width, height
+
+    if new_size in STD_DIMENSIONS:
+        width = STD_DIMENSIONS[new_size][0]
+    elif 0 < scale_percent < 100:
+        width = int(cap.get(3) * scale_percent / 100)
+        height = int(cap.get(4) * scale_percent / 100)
+    cap.set(3, width)
+    cap.set(4, height)
 
 
 def scale_choice(image, new_size_width):

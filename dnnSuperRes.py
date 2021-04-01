@@ -126,6 +126,6 @@ with switch(type_of_image) as case:
         upscaled_video.type_of_image = type_of_image
         upscaled_video.fps = fps
         upscaled_video.output_res = out_res
-        upscaled_video.model_scale = rsiv.scale_choice(upscaled_video.capture_video(), rsiv.get_dims(upscaled_video.capture_video(), upscaled_video.output_res)[0])
+        upscaled_video.model_scale = rsiv.video_scale_choice(upscaled_video.capture_video(), rsiv.get_dims(upscaled_video.capture_video(), upscaled_video.output_res)[0])
         upscaled_video.model_name = rsiv.model_choice(type_of_image, upscaled_video.model_scale)
         upscaled_video.model_path = rsiv.construct_model_path(upscaled_video.model_name, upscaled_video.model_scale)

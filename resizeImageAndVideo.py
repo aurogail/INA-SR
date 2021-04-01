@@ -18,6 +18,20 @@ VIDEO_TYPE = {
 }
 
 
+FILE_TYPE = {
+    'avi': 'video',
+    'mp4': 'video',
+    'jpg': 'image',
+    'png': 'image'
+}
+
+
+def type_fichier(file_name):
+    name, ext = os.path.splitext(file_name)
+    if ext in FILE_TYPE:
+        return FILE_TYPE[ext]
+
+
 def change_resolution(capture, width, height):
     capture.set(3, width)
     capture.set(4, height)

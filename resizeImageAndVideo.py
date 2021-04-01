@@ -30,6 +30,8 @@ def type_fichier(file_name):
     name, ext = os.path.splitext(file_name)
     if ext in FILE_TYPE:
         return FILE_TYPE[ext]
+    else:
+        return ''
 
 
 def change_resolution(capture, width, height):

@@ -26,12 +26,11 @@ FILE_TYPE = {
 }
 
 
-def type_fichier(file_name):
+def file_type(file_name):
     name, ext = os.path.splitext(file_name)
     if ext in FILE_TYPE:
         return FILE_TYPE[ext]
-    else:
-        return ''
+    return ''
 
 
 def change_resolution(capture, width, height):

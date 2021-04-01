@@ -59,8 +59,25 @@ def resize_image(image, original_size, new_size, scale_percent=100):
     return cv2.resize(image, dsize)
 
 
-def scale_choice(image, new_size):
-    size_factor = int(new_size/image.shape[1])
+def scale_choice(image, new_size_width):
+    size_factor = int(new_size_width/image.shape[1])
+
+    with switch(size_factor) as case:
+        if case(size_factor) <= 2:
+            return 2
+
+        if 2 < case(size_factor) <= 3:
+            return 3
+
+        if 3 < case(size_factor) <= 4:
+            return 4
+
+        if case(size_factor) > 4:
+            return 8
+
+
+def video_scale_choice(cap, new_size_width):
+    size_factor = int(new_size_width/cap.get(3))
 
     with switch(size_factor) as case:
         if case(size_factor) <= 2:

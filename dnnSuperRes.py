@@ -60,8 +60,8 @@ class UpscaleImage(cv2):
             if case("video"):
                 dim = rsiv.get_dims(self.capture_video(), res=self.resolution)
                 video_type_cv2 = rsiv.get_video_type(self.name)
-                out = self.VideoWriter(self.name, video_type_cv2, self.fps, dim)
-                while self.capture_video().isOpened():
+                out = self.VideoWriter(self.output_name, video_type_cv2, self.fps, dim)
+                while True:
                     start = time.time()
                     ret, image = self.capture_video().read()
                     # si fin video
@@ -127,6 +127,7 @@ with switch(rsiv.file_type(file_name)) as case:
         upscaled_image.model_name = rsiv.model_choice(type_of_image, upscaled_image.model_scale)
         upscaled_image.model_path = rsiv.construct_model_path(upscaled_image.model_name, upscaled_image.model_scale)
         upscaled_image.upscale_image()
+        #rsiv.resize_image(upscaled_image.save_upscaled_image(), upscaled_image.output_res)
         upscaled_image.save_upscaled_image()
 
     if case("video"):
@@ -139,3 +140,7 @@ with switch(rsiv.file_type(file_name)) as case:
         upscaled_video.model_name = rsiv.model_choice(type_of_image, upscaled_video.model_scale)
         upscaled_video.model_path = rsiv.construct_model_path(upscaled_video.model_name, upscaled_video.model_scale)
         upscaled_video.upscale_image()
+        #rsiv.resize_video()
+
+
+# resize si bouton d'une res standard, sinon, ne pas resize ? mettre x2 x4 x8 ?

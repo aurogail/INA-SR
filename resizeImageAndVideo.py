@@ -13,16 +13,16 @@ STD_DIMENSIONS = {
 
 
 VIDEO_TYPE = {
-    'avi': cv2.VideoWriter_fourcc(*'H264'),
-    'mp4': cv2.VideoWriter_fourcc(*'XVID')
+    '.avi': cv2.VideoWriter_fourcc(*'H264'),
+    '.mp4': cv2.VideoWriter_fourcc(*'XVID')
 }
 
 
 FILE_TYPE = {
-    'avi': 'video',
-    'mp4': 'video',
-    'jpg': 'image',
-    'png': 'image'
+    '.avi': 'video',
+    '.mp4': 'video',
+    '.jpg': 'image',
+    '.png': 'image'
 }
 
 
@@ -30,12 +30,13 @@ def file_type(file_name):
     name, ext = os.path.splitext(file_name)
     if ext in FILE_TYPE:
         return FILE_TYPE[ext]
-    return ''
+    else:
+        return ''
 
 
-def change_resolution(capture, width, height):
+"""def change_resolution(capture, width, height):
     capture.set(3, width)
-    capture.set(4, height)
+    capture.set(4, height)"""
 
 
 def get_video_type(fileName):
@@ -45,13 +46,23 @@ def get_video_type(fileName):
     return VIDEO_TYPE['avi']
 
 
+def video_get_dims(capture, res="1080p"):
+    global width, height
+    width, height = STD_DIMENSIONS["480p"]
+    if res in STD_DIMENSIONS:
+        return STD_DIMENSIONS[res]
+        #change_resolution(capture, width, height)
+    return width, height
+
+
 def get_dims(capture, res="1080p"):
     global width, height
     width, height = STD_DIMENSIONS["480p"]
     if res in STD_DIMENSIONS:
-        width, height = STD_DIMENSIONS[res]
-        change_resolution(capture, width, height)
-    return width, height
+        width = STD_DIMENSIONS[res][0]
+        height = STD_DIMENSIONS[res][1]
+        #change_resolution(capture, width, height)
+    return height, width
 
 
 def resize_image(image, new_size, scale_percent=100):
@@ -87,55 +98,60 @@ def resize_video(cap, new_size, scale_percent=100):
 
 
 def scale_choice(image, new_size_width):
-    size_factor = int(new_size_width/image.shape[1])
+    print("original image height  = "+str(image.shape[1]))
+    print("new_size_width = "+str(new_size_width))
+    global size_factor
+    if new_size_width > image.shape[1]:
+        size_factor = float(new_size_width/image.shape[1])
+    print("size factor = "+str(size_factor))
 
-    with switch(size_factor) as case:
-        if case(size_factor) <= 2:
-            return 2
+    #with switch(size_factor) as case:
+    if size_factor <= 2.0:
+        return 2
 
-        if 2 < case(size_factor) <= 3:
-            return 3
+    if 2 < size_factor <= 3.0:
+        return 3
 
-        if 3 < case(size_factor) <= 4:
-            return 4
+    if 3 < size_factor <= 4.0:
+        return 4
 
-        if case(size_factor) > 4:
-            return 8
+    if size_factor > 4.0:
+        return 8
 
 
-def video_scale_choice(cap, new_size_width):
-    size_factor = int(new_size_width/cap.get(3))
+def video_scale_choice(cap, new_size_height):
+    size_factor = int(new_size_height/cap.get(4))
+    print("size factor = "+str(size_factor))
 
-    with switch(size_factor) as case:
-        if case(size_factor) <= 2:
-            return 2
+    #with switch(size_factor) as case:
+    if size_factor <= 2:
+        return 2
 
-        if 2 < case(size_factor) <= 3:
-            return 3
+    if 2 < size_factor <= 3:
+        return 3
 
-        if 3 < case(size_factor) <= 4:
-            return 4
+    if 3 < size_factor <= 4:
+        return 4
 
-        if case(size_factor) > 4:
-            return 8
+    if size_factor > 4:
+        return 8
 
 
 def model_choice(type_of_image, scale):
-    with switch(type_of_image) as case:
-        if case("video"):
-            if scale <= 4:
-                return "espcn"
-            else:
-                return "lapsrn"
-        if case("image"):
-            if scale <= 4:
-                return "edsr"
-            else:
-                return "lapsrn"
+    if type_of_image == 'video':
+        if scale <= 4:
+            return "espcn"
+        else:
+            return "lapsrn"
+    if type_of_image == 'image':
+        if scale <= 4:
+            return "edsr"
+        else:
+            return "lapsrn"
 
 
 def construct_model_path(model, scale):
     if model == "lapsrn":
-        return os.path.join("./models/LapSRN_x" + scale + ".pb")
-    else :
-        return os.path.join("./models/", model.upper() + "_x" + scale + ".pb")
+        return "./models/LapSRN_x" + str(scale) + ".pb"
+    else:
+        return "./models/" + model.upper() + "_x" + str(scale) + ".pb"

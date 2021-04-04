@@ -65,6 +65,18 @@ def get_dims(capture, res="1080p"):
     return height, width
 
 
+def donwsize(original_image, upscaled_image, scale):
+    global width, height
+    if original_image.shape[1] < upscaled_image.shape[1]:
+        width = original_image.shape[1]
+        height = original_image.shape[0]
+        #dsize = (height, width)
+        dsize = (width, height)
+        return cv2.resize(upscaled_image, dsize, fx=-scale, fy=-scale, interpolation=cv2.INTER_AREA)
+    else:
+        print("Failed to downsize : original width > than upsclaled image")
+
+
 def resize_image(image, new_size, scale_percent=100):
     # for standard size
     # src = cv2.imread('D:/cv2-resize-image-original.png', cv2.IMREAD_UNCHANGED)
@@ -80,9 +92,10 @@ def resize_image(image, new_size, scale_percent=100):
         height = int(image.shape[0] * scale_percent / 100)
 
     # dsize
+    #dsize = (height, width)
     dsize = (width, height)
     # resize image
-    cv2.resize(image, dsize)
+    return cv2.resize(image, dsize)
 
 
 def resize_video(cap, new_size, scale_percent=100):

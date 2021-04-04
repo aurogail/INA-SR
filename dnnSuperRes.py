@@ -4,7 +4,7 @@ import resizeImageAndVideo as rsiv
 # import numpy as np
 # import matplotlib.pyplot as plt
 # import recordVideo
-# import os
+import os
 import time
 
 
@@ -36,8 +36,8 @@ class UpscaleImage(cv2):
         self.fps = fps
 
     # methode read
-    def read_image(self):
-        return self.imread(self.name)
+    def read_image(self, path):
+        return self.imread(os.path.join(path, self.name))
 
     def get_file_type(self):
         return rsiv.file_type(self.name)
@@ -46,12 +46,12 @@ class UpscaleImage(cv2):
         return self.VideoCapture(self.name)
 
     # methode main de l'upscale
-    def upscale_image(self):
+    def upscale_image(self, path):
         global sr
         sr = cv2.dnn_superres.DnnSuperResImpl_create()
         with switch(self.type_of_image) as case:
             if case("image"):
-                image = self.read_image()
+                image = self.read_image(path)
                 sr.readModel(self.model_path)
                 sr.setModel(self.model_name, self.model_scale)
                 print('Shape of Original Image: {}'.format(image.shape))
@@ -86,8 +86,8 @@ class UpscaleImage(cv2):
                 self.destroyAllWindow()
                 return sr.upsample(image)
 
-    def save_upscaled_image(self):
-        self.imwrite(self.output_name, self.upscale_image())
+    def save_upscaled_image(self, path):
+        self.imwrite(os.path.join(path, self.output_name), self.upscale_image())
         print('Shape of Super Resolution Image: {}'.format(self.upscale_image().shape))
 
     # def save_upscaled_video(self, cap):
@@ -114,6 +114,8 @@ type_of_image: str = ""
 fps: int = 0
 out_res: str = ""
 out_name: str = ""
+input_path: str = "./TEST_media"
+out_path: str = "./Results"
 
 # a faire selon type de fichier (image ou video)
 # a faire pendant que la page est ouverte ? While x.isOpended() ?
@@ -123,12 +125,12 @@ with switch(rsiv.file_type(file_name)) as case:
         upscaled_image.output_name = out_name
         upscaled_image.type_of_image = "image"
         upscaled_image.output_res = out_res
-        upscaled_image.model_scale = rsiv.scale_choice(upscaled_image.read_image(), rsiv.get_dims(upscaled_image.read_image(), upscaled_image.output_res)[0])
+        upscaled_image.model_scale = rsiv.scale_choice(upscaled_image.read_image(input_path), rsiv.get_dims(upscaled_image.read_image(), upscaled_image.output_res)[0])
         upscaled_image.model_name = rsiv.model_choice(type_of_image, upscaled_image.model_scale)
         upscaled_image.model_path = rsiv.construct_model_path(upscaled_image.model_name, upscaled_image.model_scale)
-        upscaled_image.upscale_image()
+        upscaled_image.upscale_image(input_path)
         #rsiv.resize_image(upscaled_image.save_upscaled_image(), upscaled_image.output_res)
-        upscaled_image.save_upscaled_image()
+        upscaled_image.save_upscaled_image(out_path)
 
     if case("video"):
         upscaled_video.name = file_name
@@ -139,7 +141,7 @@ with switch(rsiv.file_type(file_name)) as case:
         upscaled_video.model_scale = rsiv.video_scale_choice(upscaled_video.capture_video(), rsiv.get_dims(upscaled_video.capture_video(), upscaled_video.output_res)[0])
         upscaled_video.model_name = rsiv.model_choice(type_of_image, upscaled_video.model_scale)
         upscaled_video.model_path = rsiv.construct_model_path(upscaled_video.model_name, upscaled_video.model_scale)
-        upscaled_video.upscale_image()
+        upscaled_video.upscale_image(out_path)
         #rsiv.resize_video()
 
 

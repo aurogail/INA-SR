@@ -1,7 +1,7 @@
 import cv2 as cv
 # from switch_case import switch
 import resizeImageAndVideo as rsiv
-#import numpy
+# import numpy
 # import matplotlib.pyplot as plt
 # import recordVideo
 import os
@@ -43,8 +43,9 @@ class UpscaleImage:
     def get_file_type(self):
         return rsiv.file_type(self.name)
 
-    def capture_video(self):
-        return cv.VideoCapture(self.name)
+    def capture_video(self, path):
+        inpath = path + self.name
+        return cv.VideoCapture(inpath)
 
     # methode main de l'upscale
     def upscale_image(self, input_path):
@@ -59,12 +60,12 @@ class UpscaleImage:
             return sr.upsample(image)
 
         if self.type_of_image == 'video':
-            dim = rsiv.get_dims(self.capture_video(), res=self.resolution)
+            """dim = rsiv.get_dims(self.capture_video(), res=self.resolution)
             video_type_cv2 = rsiv.get_video_type(self.name)
-            out = cv.VideoWriter(self.output_name, video_type_cv2, self.fps, dim)
+            out = cv.VideoWriter(self.output_name, video_type_cv2, self.fps, dim)"""
             while True:
                 start = time.time()
-                ret, image = self.capture_video().read()
+                ret, image = self.capture_video(input_path).read()
                 # si fin video
                 if not ret:
                     break
@@ -72,7 +73,7 @@ class UpscaleImage:
                 sr.readModel(self.model_path)
                 sr.setModel(self.model_name, self.model_scale)
 
-                out.write(image)
+                #out.write(image)
 
                 fps_c = (1.0 / (time.time() - start))
                 cv.putText(image, 'FPS: {:.2f}'.format(fps_c), (10, 20), cv.FONT_HERSHEY_SIMPLEX, 0.8, (255, 20, 55), 1)
@@ -82,9 +83,9 @@ class UpscaleImage:
                 if cv.waitKey(20) & 0xFF == ord('q'):
                     break
 
-            self.capture_video().release()
+            """self.capture_video(input_path).release()
             out.release()
-            cv.destroyAllWindows()
+            cv.destroyAllWindows()"""
             return sr.upsample(image)
 
     def save_upscaled_image(self, in_path, out_path):
@@ -92,6 +93,16 @@ class UpscaleImage:
         outpath = out_path + self.output_name
         cv.imwrite(outpath, upscaled)
         print('Shape of Super Resolution Image: {}'.format(upscaled.shape))
+
+    def save_upscaled_video(self, in_path, out_path):
+        outpath = out_path + self.output_name
+        dim = rsiv.get_dims(self.capture_video(in_path), res=self.resolution)
+        video_type_cv2 = rsiv.get_video_type(self.name)
+        out = cv.VideoWriter(outpath, video_type_cv2, self.fps, dim)
+        out.write(self.upscale_image(in_path))
+        self.capture_video(input_path).release()
+        out.release()
+        cv.destroyAllWindows()
 
     # def save_upscaled_video(self, cap):
         # self.VideoWriter(self.name, videoTypeCV2, fps, dim)
@@ -174,12 +185,13 @@ if rsiv.file_type(file_name) == 'video':
     upscaled_video.type_of_image = 'video'
     upscaled_video.fps = fps
     upscaled_video.output_res = out_res
-    upscaled_video.model_scale = rsiv.video_scale_choice(upscaled_video.capture_video(), rsiv.get_dims(upscaled_video.capture_video(), upscaled_video.output_res)[1])
+    upscaled_video.model_scale = rsiv.video_scale_choice(upscaled_video.capture_video(input_path), rsiv.get_dims(upscaled_video.capture_video(input_path), upscaled_video.output_res)[1])
     upscaled_video.model_name = rsiv.model_choice('video', upscaled_video.model_scale)
     upscaled_video.model_path = rsiv.construct_model_path(upscaled_video.model_name, upscaled_video.model_scale)
     upscaled_video.output_name = filename + "_to_" + out_res + "_with_" + upscaled_video.model_name + ext
-    upscaled_video.upscale_image(output_path)
+    #upscaled_video.upscale_image(output_path)
     #rsiv.resize_video()
+    upscaled_video.save_upscaled_video(input_path, output_path)
 
 
 # resize si bouton d'une res standard, sinon, ne pas resize ? mettre x2 x4 x8 ?

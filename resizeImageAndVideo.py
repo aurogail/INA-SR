@@ -1,6 +1,6 @@
 import os
 import cv2
-from switchcase import switch
+# from switchcase import switch
 
 # cap = cv2.VideoCapture(0)
 

@@ -34,8 +34,10 @@ def open_img():
     panel.grid(row = 4)
 
 #button
-open_button = Button(window, text='Ouvrir un fichier', command = open_img).grid(row = 1, columnspan = 4)
-exit_button = Button(window, text="exit", command = lambda : exit()).grid(row = 2, columnspan = 4)
+open_button = Button(window, text='Ouvrir un fichier', command = open_img)
+open_button.grid(row = 1, columnspan = 4)
+exit_button = Button(window, text="exit", command = lambda : exit())
+exit_button.grid(row = 2, columnspan = 4)
 
 #execute window
 window.mainloop()

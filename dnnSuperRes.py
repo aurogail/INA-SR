@@ -75,8 +75,8 @@ class UpscaleImage:
 
                 #out.write(image)
 
-                fps_c = (1.0 / (time.time() - start))
-                cv.putText(image, 'FPS: {:.2f}'.format(fps_c), (10, 20), cv.FONT_HERSHEY_SIMPLEX, 0.8, (255, 20, 55), 1)
+                #fps_c = (1.0 / (time.time() - start))
+                cv.putText(image, 'FPS: {:.2f}'.format(self.fps), (10, 20), cv.FONT_HERSHEY_SIMPLEX, 0.8, (255, 20, 55), 1)
 
                 cv.imshow("Upscaled frame", image)
                 print('Shape of Original Image: {}'.format(image.shape))
@@ -144,9 +144,9 @@ class UpscaleImage:
 #fps: int
 
 
-file_name = "Rory_640x480.png"
+file_name = "giveon_320x240.mp4"
 filename, ext = os.path.splitext(file_name)
-fps = 0
+#fps = 0
 out_res = '1080p'
 input_path = "test_media/"
 output_path = "./results/"
@@ -190,14 +190,15 @@ if rsiv.file_type(file_name) == 'image':
     upscaled_image.save_upscaled_image(input_path, output_path)
 
 if rsiv.file_type(file_name) == 'video':
-    upscaled_video = UpscaleImage(name=file_name, resolution='', output_name='', output_res='', model_name='', model_path='', model_scale=0, type_of_image='', fps=0)
+    upscaled_video = UpscaleImage(name=file_name, resolution='', output_name='', output_res='', model_name='espcn', model_path='', model_scale=4, type_of_image='video', fps=0)
     #upscaled_video.name = file_name
     #upscaled_video.output_name = out_name
-    upscaled_video.type_of_image = 'video'
-    upscaled_video.fps = fps
+    #upscaled_video.type_of_image = 'video'
+    upscaled_video.fps = upscaled_video.capture_video(input_path).get(cv.CAP_PROP_FPS)
+
     #upscaled_video.output_res = out_res
-    upscaled_video.model_scale = rsiv.video_scale_choice(upscaled_video.capture_video(input_path), rsiv.get_dims(upscaled_video.capture_video(input_path), upscaled_video.output_res)[1])
-    upscaled_video.model_name = rsiv.model_choice('video', upscaled_video.model_scale)
+    #upscaled_video.model_scale = rsiv.video_scale_choice(upscaled_video.capture_video(input_path), rsiv.get_dims(upscaled_video.capture_video(input_path), upscaled_video.output_res)[1])
+    #upscaled_video.model_name = rsiv.model_choice('video', upscaled_video.model_scale)
     upscaled_video.model_path = rsiv.construct_model_path(upscaled_video.model_name, upscaled_video.model_scale)
     upscaled_video.output_name = filename + "_to_" + out_res + "_with_" + upscaled_video.model_name + ext
     #upscaled_video.upscale_image(output_path)

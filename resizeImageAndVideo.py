@@ -13,13 +13,17 @@ STD_DIMENSIONS = {
 
 
 VIDEO_TYPE = {
-    '.avi': cv2.VideoWriter_fourcc(*'H264'),
-    '.mp4': cv2.VideoWriter_fourcc(*'XVID')
+    '.avi': cv2.VideoWriter_fourcc(*'avc1'),
+    #'.mp4': cv2.VideoWriter_fourcc(*'XVID'),
+    '.mkv': cv2.VideoWriter_fourcc(*'avc1'),
+    '.mp4': cv2.VideoWriter_fourcc(*'avc1')
+    #'.mp4': cv2.VideoWriter_fourcc('H', '2', '6', '4')
 }
 
 
 FILE_TYPE = {
     '.avi': 'video',
+    '.mkv': 'video',
     '.mp4': 'video',
     '.jpg': 'image',
     '.png': 'image'
@@ -75,6 +79,29 @@ def donwsize(original_image, upscaled_image, scale):
         return cv2.resize(upscaled_image, dsize, fx=-scale, fy=-scale, interpolation=cv2.INTER_AREA)
     else:
         print("Failed to downsize : original width > than upsclaled image")
+
+
+"""def donwsize_video(cap, upscaled_image, scale):
+    global width, height
+    if cap.get(3) < upscaled_image.get(3):
+        width = cap.get(3)
+        height = cap.get(4)
+        #dsize = (height, width)
+        dsize = (width, height)
+        return cv2.resize(upscaled_image, dsize, fx=-scale, fy=-scale, interpolation=cv2.INTER_AREA)
+    else:
+        print("Failed to downsize : original width > than upsclaled image")"""
+
+
+def donwsize_video(cap, upscaled_image, scale):
+    global width, height
+    width = int(cap.get(3))
+    height = int(cap.get(4))
+    #dsize = (height, width)
+    dsize = (width, height)
+    return cv2.resize(upscaled_image, dsize, fx=-scale, fy=-scale, interpolation=cv2.INTER_AREA)
+"""else:
+print("Failed to downsize : original width > than upsclaled image")"""
 
 
 def resize_image(image, new_size, scale_percent=100):

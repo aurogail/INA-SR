@@ -91,9 +91,12 @@ class UpscaleImage:
     def save_upscaled_image(self, in_path, out_path):
         upscaled = self.upscale_image(in_path)
         downsized_image = rsiv.donwsize(self.read_image(in_path), upscaled, self.model_scale)
+        resize = rsiv.resize_image(self.read_image(in_path), "", 200)
         outpath = out_path + self.output_name
         cv.imshow("origin", self.read_image(in_path))
         print("showing origin")
+        cv.imshow("resize", resize)
+        print("showing resize")
         cv.imshow("upscaled", upscaled)
         print("showing upscaled")
         cv.imshow("downsized", downsized_image)
@@ -144,7 +147,7 @@ class UpscaleImage:
 #fps: int
 
 
-file_name = "giveon_320x240.mp4"
+file_name = "bird2.jpg"
 filename, ext = os.path.splitext(file_name)
 #fps = 0
 out_res = '1080p'
@@ -174,7 +177,7 @@ cv.imwrite(outpath, out)"""
 
 if rsiv.file_type(file_name) == 'image':
     print("Type of file = "+rsiv.file_type(file_name))
-    upscaled_image = UpscaleImage(name=file_name, resolution='', output_name='', output_res='', model_name='edsr', model_path='', model_scale=3, type_of_image='image', fps=0)
+    upscaled_image = UpscaleImage(name=file_name, resolution='', output_name='', output_res='', model_name='edsr', model_path='', model_scale=4, type_of_image='image', fps=0)
     #upscaled_image.name = file_name
     #upscaled_image.output_name = out_name
     #upscaled_image.type_of_image = 'image'

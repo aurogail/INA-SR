@@ -16,7 +16,7 @@ VIDEO_TYPE = {
     '.avi': cv2.VideoWriter_fourcc(*'avc1'),
     #'.mp4': cv2.VideoWriter_fourcc(*'XVID'),
     '.mkv': cv2.VideoWriter_fourcc(*'avc1'),
-    '.mp4': cv2.VideoWriter_fourcc(*'avc1')
+    '.mp4': cv2.VideoWriter_fourcc(*'mp4v')
     #'.mp4': cv2.VideoWriter_fourcc('H', '2', '6', '4')
 }
 
@@ -114,7 +114,7 @@ def resize_image(image, new_size, scale_percent=100):
 
     if new_size in STD_DIMENSIONS:
         width, height = STD_DIMENSIONS[new_size]
-    elif 0 < scale_percent < 100:
+    elif 0 < scale_percent:
         width = int(image.shape[1] * scale_percent / 100)
         height = int(image.shape[0] * scale_percent / 100)
 
@@ -125,16 +125,16 @@ def resize_image(image, new_size, scale_percent=100):
     return cv2.resize(image, dsize)
 
 
-def resize_video(cap, new_size, scale_percent=100):
+def resize_video(cap, image, new_size, scale_percent=100):
     global width, height
 
     if new_size in STD_DIMENSIONS:
-        width = STD_DIMENSIONS[new_size][0]
-    elif 0 < scale_percent < 100:
+        width, height = STD_DIMENSIONS[new_size]
+    elif 0 < scale_percent:
         width = int(cap.get(3) * scale_percent / 100)
         height = int(cap.get(4) * scale_percent / 100)
-    cap.set(3, width)
-    cap.set(4, height)
+    dsize = (width, height)
+    return cv2.resize(image, dsize)
 
 
 def scale_choice(image, new_size_width):

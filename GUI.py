@@ -21,20 +21,20 @@ window.configure(background='white')
 # Function for openeing the file explorer
 def openFilename():
     filename = filedialog.askopenfilename(title = "Selectionner un Fichier",
-                                           filetypes = (("JPEG File","*.jpg"),
-                                                        ("PNG File","*.png"),
-                                                        ("all files","*.*")))
+                                          filetypes = (("JPEG File","*.jpg"),
+                                                       ("PNG File","*.png"),
+                                                       ("all files","*.*")))
     return filename
 
-def open_img():
-    x = openFilename()
-    original_img = ImageTk.PhotoImage(Image.open(x))
+def open_img(filename):
+    original_img = ImageTk.PhotoImage(Image.open(filename))
     panel = Label(window, image = original_img)
     panel.image=original_img
     panel.grid(row = 4)
 
 #button
-open_button = Button(window, text='Ouvrir un fichier', command = open_img)
+#def opnb():
+open_button = Button(window, text='Ouvrir un fichier', command = open_img())
 open_button.grid(row = 1, columnspan = 4)
 exit_button = Button(window, text="exit", command = lambda : exit())
 exit_button.grid(row = 2, columnspan = 4)

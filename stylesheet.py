@@ -6,6 +6,7 @@ import cv2
 import os
 import copy
 
+import FileType
 
 class VideoPlayer(ttk.Frame):
 
@@ -79,11 +80,12 @@ class VideoPlayer(ttk.Frame):
     def _build_widget(self, parent: ttk.Frame=None, setup: dict=dict):
 
         if parent is None:
-            self.master.geometry("840x600")
-            self.master.minsize(640,400)
-            self.master.maxsize(1050,750)
+            self.master.geometry("1050x7500")
+            self.master.minsize(1050,750)
+            self.master.maxsize(1920,1080)
             self.main_panel = Frame(self.master, relief=SUNKEN)
             self.main_panel.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.8)
+            self.master.title("SR GUI")
 
         else:
             self.main_panel = parent
@@ -94,14 +96,20 @@ class VideoPlayer(ttk.Frame):
         icon_width = 45
         icon_height = 50
         canvas_progressbar_height = 2
-        # frame_height = int(self.main_panel.cget('height')/10-icon_height-canvas_progressbar_height)
+        #frame_height = int(self.main_panel.cget('height')/10-icon_height-canvas_progressbar_height)
 
-        self.canvas_image = Canvas(self.main_panel, bg="white", highlightthickness=0)
-        self.canvas_image.pack(fill=BOTH, expand=True, side= TOP)
+        self.canvas_principal = Canvas(self.main_panel, bg ="white", highlightthickness=0)
+
+        self.canvas_image = Canvas(self.canvas_principal, bg="white", highlightthickness=0)
+        self.canvas_image.grid(row=0, column = 0)
         self.canvas_image.bind("<Configure>", self.resize)
 
+        self.canvas_image2 = Canvas(self.canvas_principal, bg="white", highlightthickness=0)
+        self.canvas_image2.grid(row=0, column= 1)
+        self.canvas_image2.bind("<Configure>", self.resize)
+
         self.board = Label(self.canvas_image, bg="white", width=44, height=14)
-        self.board.pack(fill=BOTH, expand=True)
+        self.board.pack( fill=BOTH , expand=True)
 
         canvas_progressbar = Canvas(self.main_panel, relief=FLAT, height=canvas_progressbar_height,
                                     bg="white", highlightthickness=0)
@@ -110,11 +118,20 @@ class VideoPlayer(ttk.Frame):
         s = ttk.Style()
         s.theme_use('aqua')
         self.progressbar = ttk.Progressbar(canvas_progressbar, orient='horizontal', length=200, mode="determinate")
-        self.progressbar.pack(fill=X, padx=10, pady=10, expand=True)
 
         # control panel
         control_frame = Frame(self.main_panel, bg="white", relief=SUNKEN)
-        control_frame.pack(side=LEFT, fill=Y, padx=20)
+        control_frame.pack(side=TOP,padx=20, fill=X, pady= 10)
+
+        control_frame_algo= Frame(self.main_panel)
+        control_frame_pe = LabelFrame(control_frame_algo, bg="white", relief=FLAT, text='Modèles Pré-entrainés',
+                                      font=('century gothic', 16), pady=10)
+        control_frame_pe.grid(row=0, column=0, padx=20)
+
+        control_frame_modele = LabelFrame(control_frame_algo, bg="white", relief=FLAT, text='Choix du Modèle',
+                                          font=('century gothic', 16), pady=10)
+        control_frame_modele.grid(row=0, column=1, padx= 50)
+        control_frame_algo.pack(side=BOTTOM, fill=X)
 
         icons_path = os.path.abspath(os.path.join(os.pardir, 'Icons'))
         if setup['video']:
@@ -132,7 +149,7 @@ class VideoPlayer(ttk.Frame):
                                        text="Load Image", bg="black", image=self.icon_image,
                                        height=icon_height, width=icon_width,
                                        command=lambda: self.load_image())
-            button_load_image.pack(side='left')
+            button_load_image.pack(side='left', padx=10)
 
         if setup['pause']:
             # pause video button button_live_video
@@ -152,30 +169,105 @@ class VideoPlayer(ttk.Frame):
                                        text="stop", bg='white', height=icon_height, width=icon_width,
                                        image=self.icon_stop,
                                        command=lambda: self.stop_movie())
-            button_stop_video.pack(side='left')
+            button_stop_video.pack(side='left',padx=10)
 
 
         if setup['algo']:
             # load image button button_load_image
             # self.icon_algo = PhotoImage( file=os.path.join( icons_path, 'algo.PNG' ) )
-            self.button_run_algo = Button(control_frame, padx=2, pady=2, bd=4, fg="white", font=('arial', 12, 'bold'),
-                                          text="Run algo", bg="black", height=1, width=8,
-                                          command=lambda: self.extract())
-            self.button_run_algo.pack(side='left')
+
+            self.icon_x2 = PhotoImage( file=os.path.join( icons_path, 'x2.png' ) )
+            self.button_x2 = Button(control_frame_pe, padx=2, pady=2, bd=4, fg="white", font=('arial',12,'bold'),
+                                    text="x2", bg="white", height=icon_height, width=icon_width,
+                                    image=self.icon_x2,
+                                    command=lambda: self.extract())
+            self.button_x2.pack(side='left')
+
+            self.icon_x3 = PhotoImage( file=os.path.join( icons_path, 'x3.png' ) )
+            self.button_x3 = Button(control_frame_pe, padx=2, pady=2, bd=4, fg="white", font=('arial',12,'bold'),
+                                    text="x3", bg="white", height=icon_height, width=icon_width,
+                                    image=self.icon_x3,
+                                    command=lambda: self.extract())
+            self.button_x3.pack(side='left',padx=10)
+
+            self.icon_x4 = PhotoImage( file=os.path.join( icons_path, 'x4.png' ) )
+            self.button_x4 = Button(control_frame_pe, padx=2, pady=2, bd=4, fg="white", font=('arial',12,'bold'),
+                                    text="x4", bg="black", height=icon_height, width=icon_width,
+                                    image=self.icon_x4,
+                                    command=lambda: self.extract())
+            self.button_x4.pack(side='left')
+
+            self.icon_x8 = PhotoImage( file=os.path.join( icons_path, 'x8.png' ) )
+            self.button_x8 = Button(control_frame_pe, padx=2, pady=2, bd=4, fg="white", font=('arial', 12, 'bold'),
+                                    text="x8", bg="black", height=icon_height, width=icon_width,
+                                    image=self.icon_x8,
+                                    command=lambda: self.extract())
+            self.button_x8.pack(side='left', padx=10)
+
+            self.icon_uhd = PhotoImage( file=os.path.join( icons_path, 'uhd.png' ) )
+            self.button_uhd = Button(control_frame_pe, padx=2, pady=2, bd=4, fg="white", font=('arial', 12, 'bold'),
+                                     text="UHD", bg="black", height=icon_height, width=icon_width,
+                                     image=self.icon_uhd,
+                                     command=lambda: self.extract())
+            self.button_uhd.pack(side='left')
+
+            self.icon_hd = PhotoImage( file=os.path.join( icons_path, 'hd.png' ) )
+            self.button_hd = Button(control_frame_pe, padx=2, pady=2, bd=4, fg="white", font=('arial', 12, 'bold'),
+                                    text="HD", bg="black", height=icon_height, width=icon_width,
+                                    image=self.icon_hd,
+                                    command=lambda: self.extract())
+            self.button_hd.pack(side='left',padx=10)
+
+            self.icon_best = PhotoImage( file=os.path.join( icons_path, 'best.png' ) )
+            self.button_best = Button(control_frame_modele, padx=2, pady=2, bd=4, fg="white", font=('arial', 12, 'bold'),
+                                      text="Best", bg="black", height=icon_height, width=icon_width,
+                                      image=self.icon_best,
+                                      command=lambda: self.extract())
+            self.button_best.pack(side='left')
+
+            self.icon_fast = PhotoImage( file=os.path.join( icons_path, 'fast.png' ) )
+            self.button_fast = Button(control_frame_modele, padx=2, pady=2, bd=4, fg="white", font=('arial', 12, 'bold'),
+                                      text="Fast", bg="black", height=icon_height, width=icon_width,
+                                      image=self.icon_fast,
+                                      command=lambda: self.extract())
+            self.button_fast.pack(side='left',padx=10)
+
+            self.icon_apply = PhotoImage( file=os.path.join( icons_path, 'apply.png' ) )
+            self.button_apply = Button(control_frame_modele, padx=2, pady=2, bd=4, fg="white", font=('arial', 12, 'bold'),
+                                       text="Apply", bg="black", height=icon_height, width=icon_width,
+                                       image=self.icon_apply,
+                                       command=lambda: self.extract())
+            self.button_apply.pack(side='left',padx=50)
 
         # edit box
         self.frame_counter = Label(control_frame, height=2, width=15, padx=10, pady=10, bd=4,
                                    bg='white', fg="grey", font=('arial', 10, 'bold'))
-        self.frame_counter.pack(side='right')
+        self.frame_counter.pack(side=RIGHT)
 
     def extract(self):
-        if self.algo:
 
-            self.algo = False
-            self.button_run_algo.config(text="Run algo")
+        if FileType.file_type(self.filename) == "image":
+            board2 = Label(self.canvas_image, width=80, height=-1, bg="white")
+            board2.pack(side=RIGHT, fill=BOTH, expand=True)
+            print("File type, ext = ", FileType.file_type_ext(self.filename))
+            self.__initialdir = os.path.dirname(os.path.abspath(self.filename))
+            if len(self.filename) != 0:
+                self.frame = Image.open(self.filename)
+                image = self.frame
+                self.update_progress(1, 1)
+                self.__image_ratio = image.height / image.width
+                self.show_image(image, board2)
+
+        elif FileType.file_type(self.filename) == "video":
+            board2 = Label(self.canvas_image, width=80, height=-1, bg="white")
+            board2.pack(side=RIGHT, fill=BOTH, expand=True)
+            print("File type, ext = ", FileType.file_type_ext(self.filename))
+            if len(self.filename) != 0:
+                self.__initialdir_movie = os.path.dirname(os.path.abspath(self.filename))
+                #self.run_frames(board2)
+
         else:
-            self.algo = True
-            self.button_run_algo.config(text="Stop algo")
+            print("No file type, ext = ", FileType.file_type_ext(self.filename))
 
     def resize(self, event):
 
@@ -192,12 +284,22 @@ class VideoPlayer(ttk.Frame):
         self.__size = (int(width), int(height))
         if Image.isImageType(self.frame):
             image = copy.deepcopy(self.frame)
-            self.show_image(image)
+            self.show_image(image, self.board)
+
+    def open_image_file(self):
+        return filedialog.askopenfilename(initialdir=self.__initialdir, title="Ouvrir un fichier",
+                                          filetypes=(("jpeg files", "*.jpg"), ("all files", "*.*")))
+
+    def open_video_file(self):
+        return filedialog.askopenfilename(initialdir=self.__initialdir_movie,
+                                          title="Ouvrir un fichier",
+                                          filetypes=(("AVI files", "*.AVI"),
+                                                     ("MP4 files", "*.MP4"),
+                                                     ("all files", "*.*")))
 
     def load_image(self):
 
-        filename = filedialog.askopenfilename(initialdir=self.__initialdir, title="Ouvrir un fichier",
-                                              filetypes=(("jpeg files", "*.jpg"), ("all files", "*.*")))
+        filename = self.open_image_file()
         self.__initialdir = os.path.dirname(os.path.abspath(filename))
         if len(filename) != 0:
             self.frame = Image.open(filename)
@@ -205,57 +307,58 @@ class VideoPlayer(ttk.Frame):
 
             self.update_progress(1, 1)
             self.__image_ratio = image.height / image.width
-            self.filename= filename
-            self.show_image(image)
+            self.filename = filename
+            self.show_image(image, self.board)
 
         return filename
 
-    def show_image(self, image):
+    def show_image(self, image, board):
 
         # resize image
         image.thumbnail(self.__size)
         #
         self.photo = ImageTk.PhotoImage(image=image)
         # The Label widget is a standard Tkinter widget used to display a text or image on the screen.
-        self.board.config(image=self.photo)
-        self.board.image = self.photo
+        board.config(image=self.photo)
+        board.image = self.photo
         # refresh image display
-        self.board.update()
+        board.update()
 
     def load_movie(self):
 
-        movie_filename = filedialog.askopenfilename(initialdir=self.__initialdir_movie,
-                                                    title="Ouvrir un fichier",
-                                                    filetypes=(("AVI files", "*.AVI"),
-                                                               ("MP4 files", "*.MP4"),
-                                                               ("all files", "*.*")))
+        self.board.destroy()
+        self.board = Label(self.canvas_image, bg="white", width=44, height=14)
+        self.board.pack( fill=BOTH , expand=True)
+        movie_filename = self.open_video_file()
         if len(movie_filename) != 0:
             self.__initialdir_movie = os.path.dirname(os.path.abspath(movie_filename))
-            self.filename=movie_filename
-            self.play_movie(movie_filename)
-
+            self.filename = movie_filename
+            self.__cap = cv2.VideoCapture(movie_filename)
+            self.play_movie(self.__cap, self.board)
         pass
         return movie_filename
 
-    def play_movie(self, movie_filename: str):
+    def play_movie(self, cap, board):
 
-        self.__cap = cv2.VideoCapture(movie_filename)
-        self.__frames_numbers = int(self.__cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.__image_ratio = self.__cap.get(cv2.CAP_PROP_FRAME_HEIGHT) / self.__cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        #self.__cap = cv2.VideoCapture(movie_filename)
+        self.__frames_numbers = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.__image_ratio = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) / cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 
+        self.progressbar.pack(fill=X, padx=10, pady=10, expand=True)
         self.progressbar["maximum"] = self.__frames_numbers
         self.__play = True
 
-        self.run_frames()
+        self.run_frames(cap, board)
 
-    def run_frames(self):
+    def run_frames(self, cap, board):
+
         frame_pass = 0
 
-        while self.__cap.isOpened():
+        while cap.isOpened():
 
             if self.__play:
                 # update the frame number
-                ret, image_matrix = self.__cap.read()
+                ret, image_matrix = cap.read()
                 # self.frame = image_matrix
                 if ret:
                     frame_pass += 1
@@ -263,12 +366,12 @@ class VideoPlayer(ttk.Frame):
 
                     # convert matrix image to pillow image object
                     self.frame = self.matrix_to_pillow(image_matrix)
-                    self.show_image(self.frame)
+                    self.show_image(self.frame, board)
 
                 # refresh image display
-            self.board.update()
+            board.update()
 
-        self.__cap.release()
+        cap.release()
 
         cv2.destroyAllWindows()
 
@@ -288,6 +391,7 @@ class VideoPlayer(ttk.Frame):
 
         cv2.destroyAllWindows()
         self.update_progress(0, 0)
+        self.board.destroy()
 
     def pause_movie(self):
 
@@ -312,10 +416,9 @@ class VideoPlayer(ttk.Frame):
         self.progressbar["value"] = frame_pass
         self.progressbar.update()
 
-
 def main():
     vid = VideoPlayer(image=True, play=True, algo=True)
-    vid.command = lambda frame: extract_image(frame)
+    #vid.command = lambda frame: extract_image(frame)
     vid.mainloop()
 
 #def extract_image(matrix_image: np.array):

@@ -1,6 +1,5 @@
 import os
 
-
 FILE_TYPE = {
     '.avi': 'video',
     '.mkv': 'video',
@@ -10,10 +9,15 @@ FILE_TYPE = {
 }
 
 
+def file_type_ext(file_name):
+    name, ext = os.path.splitext(file_name)
+    print("ext : ", ext)
+
+
 def file_type(file_name):
     name, ext = os.path.splitext(file_name)
-    if ext in FILE_TYPE:
+    #print("ext : ", ext)
+    if ext.lower() in FILE_TYPE:
         return FILE_TYPE[ext]
     else:
         return ''
-

@@ -85,7 +85,7 @@ class VideoPlayer(ttk.Frame):
             self.master.maxsize(1920,1080)
             self.main_panel = Frame(self.master, relief=SUNKEN)
             self.main_panel.place(relx=0.1, rely=0.1, relwidth=0.8, relheight=0.8)
-            self.master.title("SR GUI")
+            self.master.title("Super Résolution GUI")
 
         else:
             self.main_panel = parent
@@ -98,33 +98,42 @@ class VideoPlayer(ttk.Frame):
         canvas_progressbar_height = 2
         #frame_height = int(self.main_panel.cget('height')/10-icon_height-canvas_progressbar_height)
 
-        self.canvas_principal = Canvas(self.main_panel, bg ="white", highlightthickness=0)
+        self.canvas_image = Canvas(self.main_panel, bg="white", relief=RIDGE)
 
-        self.canvas_image = Canvas(self.canvas_principal, bg="white", highlightthickness=0)
-        self.canvas_image.grid(row=0, column = 0)
+        self.frame_image_original= LabelFrame(self.canvas_image, bg="white", relief=RIDGE,text='Image Original',
+                                              font=('century gothic', 16), pady=10, width=100)
+        self.frame_image_original.grid(row=0, column=0, sticky="nsew")
+        self.frame_image_original.bind("<Configure>", self.resize)
+
+        self.frame_image_SR = LabelFrame(self.canvas_image, bg="white", relief=RIDGE, text='Image SR',
+                                         font=('century gothic', 16), pady=10, width=100)
+        self.frame_image_SR.grid(row=0, column=1, sticky="nsew")
+        self.frame_image_SR.bind("<Configure>", self.resize)
+
+        self.canvas_image.grid_columnconfigure(0, weight=1)
+        self.canvas_image.grid_columnconfigure(1, weight=1)
+        self.canvas_image.grid_rowconfigure(0, weight=1)
+
+        self.canvas_image.pack(fill=BOTH, expand=True, side=TOP)
         self.canvas_image.bind("<Configure>", self.resize)
 
-        self.canvas_image2 = Canvas(self.canvas_principal, bg="white", highlightthickness=0)
-        self.canvas_image2.grid(row=0, column= 1)
-        self.canvas_image2.bind("<Configure>", self.resize)
-
-        self.board = Label(self.canvas_image, bg="white", width=44, height=14)
+        self.board = Label(self.frame_image_original, bg="white")
         self.board.pack( fill=BOTH , expand=True)
 
         canvas_progressbar = Canvas(self.main_panel, relief=FLAT, height=canvas_progressbar_height,
                                     bg="white", highlightthickness=0)
-        canvas_progressbar.pack(fill=X, padx=10, pady=10)
+        canvas_progressbar.pack(fill=BOTH, padx=10, pady=10)
 
         s = ttk.Style()
         s.theme_use('aqua')
         self.progressbar = ttk.Progressbar(canvas_progressbar, orient='horizontal', length=200, mode="determinate")
 
         # control panel
-        control_frame = Frame(self.main_panel, bg="white", relief=SUNKEN)
+        control_frame = Frame(self.main_panel, bg="white")
         control_frame.pack(side=TOP,padx=20, fill=X, pady= 10)
 
-        control_frame_algo= Frame(self.main_panel)
-        control_frame_pe = LabelFrame(control_frame_algo, bg="white", relief=FLAT, text='Modèles Pré-entrainés',
+        control_frame_algo= Frame(self.main_panel, bg="white")
+        control_frame_pe = LabelFrame(control_frame_algo, bg="white", relief=FLAT, text='Résolution',
                                       font=('century gothic', 16), pady=10)
         control_frame_pe.grid(row=0, column=0, padx=20)
 
@@ -247,8 +256,8 @@ class VideoPlayer(ttk.Frame):
     def extract(self):
 
         if FileType.file_type(self.filename) == "image":
-            board2 = Label(self.canvas_image, width=80, height=-1, bg="white")
-            board2.pack(side=RIGHT, fill=BOTH, expand=True)
+            board2 = Label(self.frame_image_SR,height=-1, bg="white")
+            board2.pack(side=RIGHT, expand=True)
             print("File type, ext = ", FileType.file_type_ext(self.filename))
             self.__initialdir = os.path.dirname(os.path.abspath(self.filename))
             if len(self.filename) != 0:
@@ -257,6 +266,8 @@ class VideoPlayer(ttk.Frame):
                 self.update_progress(1, 1)
                 self.__image_ratio = image.height / image.width
                 self.show_image(image, board2)
+            self.__cap.release()
+            cv2.destroyAllWindows()
 
         elif FileType.file_type(self.filename) == "video":
             board2 = Label(self.canvas_image, width=80, height=-1, bg="white")
@@ -284,7 +295,7 @@ class VideoPlayer(ttk.Frame):
         self.__size = (int(width), int(height))
         if Image.isImageType(self.frame):
             image = copy.deepcopy(self.frame)
-            self.show_image(image, self.board)
+            self.show_image(image, self.board, self.board2)
 
     def open_image_file(self):
         return filedialog.askopenfilename(initialdir=self.__initialdir, title="Ouvrir un fichier",
@@ -327,7 +338,7 @@ class VideoPlayer(ttk.Frame):
     def load_movie(self):
 
         self.board.destroy()
-        self.board = Label(self.canvas_image, bg="white", width=44, height=14)
+        self.board = Label(self.frame_image_original, bg="white", width=44, height=14)
         self.board.pack( fill=BOTH , expand=True)
         movie_filename = self.open_video_file()
         if len(movie_filename) != 0:
@@ -335,7 +346,7 @@ class VideoPlayer(ttk.Frame):
             self.filename = movie_filename
             self.__cap = cv2.VideoCapture(movie_filename)
             self.play_movie(self.__cap, self.board)
-        pass
+        #pass
         return movie_filename
 
     def play_movie(self, cap, board):
@@ -370,6 +381,7 @@ class VideoPlayer(ttk.Frame):
 
                 # refresh image display
             board.update()
+            board2.update()
 
         cap.release()
 
@@ -392,6 +404,7 @@ class VideoPlayer(ttk.Frame):
         cv2.destroyAllWindows()
         self.update_progress(0, 0)
         self.board.destroy()
+        self.board2.destroy()
 
     def pause_movie(self):
 
@@ -415,6 +428,13 @@ class VideoPlayer(ttk.Frame):
         # update the progressbar
         self.progressbar["value"] = frame_pass
         self.progressbar.update()
+
+
+def ChangeState(Objet_button:Button):
+    if (Objet_button['state'] == NORMAL):
+        Objet_button['state'] = DISABLED
+    else:
+        Objet_button['state'] = NORMAL
 
 def main():
     vid = VideoPlayer(image=True, play=True, algo=True)

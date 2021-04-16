@@ -1,9 +1,9 @@
 import os
 import cv2
-# from switchcase import switch
 
-# cap = cv2.VideoCapture(0)
+    # Dictionnaires #
 
+# Resolution : (Width, Height)
 STD_DIMENSIONS = {
     "480p": (640, 480),
     "720p": (1280, 720),
@@ -11,16 +11,14 @@ STD_DIMENSIONS = {
     "4k": (3840, 2160)
 }
 
-
+# Extension de vidéo : codec
 VIDEO_TYPE = {
     '.avi': cv2.VideoWriter_fourcc(*'avc1'),
-    #'.mp4': cv2.VideoWriter_fourcc(*'XVID'),
     '.mkv': cv2.VideoWriter_fourcc(*'avc1'),
     '.mp4': cv2.VideoWriter_fourcc(*'mp4v')
-    #'.mp4': cv2.VideoWriter_fourcc('H', '2', '6', '4')
 }
 
-
+# Extension de fichier : Type de fichier
 FILE_TYPE = {
     '.avi': 'video',
     '.mkv': 'video',
@@ -29,7 +27,9 @@ FILE_TYPE = {
     '.png': 'image'
 }
 
+    # Fonctions appelée par les boutons #
 
+# Renvoi le type de fichier en fonction de son extension
 def file_type(file_name):
     name, ext = os.path.splitext(file_name)
     if ext in FILE_TYPE:
@@ -37,20 +37,22 @@ def file_type(file_name):
     else:
         return ''
 
-
-"""def change_resolution(capture, width, height):
-    capture.set(3, width)
-    capture.set(4, height)"""
-
-
+# Renvoi le codec choisi en fonction de l'extension
 def get_video_type(fileName):
     filename, ext = os.path.splitext(fileName)
     if ext in VIDEO_TYPE:
         return VIDEO_TYPE[ext]
     return VIDEO_TYPE['avi']
 
+# Renvoi la résolution (Width, Height) selon le type de fichier
+def get_dims(image_name, res="1080p"):
+    if file_type(image_name) == "image":
+        return image_get_dims(res)
+    elif file_type(image_name) == "video":
+        return video_get_dims(res)
 
-def video_get_dims(capture, res="1080p"):
+# Renvoi la résolution (Width, Height) pour une vidéo
+def video_get_dims(res="1080p"):
     global width, height
     width, height = STD_DIMENSIONS["480p"]
     if res in STD_DIMENSIONS:
@@ -58,8 +60,8 @@ def video_get_dims(capture, res="1080p"):
         #change_resolution(capture, width, height)
     return width, height
 
-
-def get_dims(capture, res="1080p"):
+# Renvoi la résolution (Height, Width) pour une image cv2
+def image_get_dims(res="1080p"):
     global width, height
     width, height = STD_DIMENSIONS["480p"]
     if res in STD_DIMENSIONS:
@@ -68,7 +70,7 @@ def get_dims(capture, res="1080p"):
         #change_resolution(capture, width, height)
     return height, width
 
-
+# Renvoi une image cv2 resized si la taille de l'upscaled est supérieur à celle de l'original
 def donwsize(original_image, upscaled_image, scale):
     global width, height
     if original_image.shape[1] < upscaled_image.shape[1]:
@@ -81,18 +83,6 @@ def donwsize(original_image, upscaled_image, scale):
         print("Failed to downsize : original width > than upsclaled image")
 
 
-"""def donwsize_video(cap, upscaled_image, scale):
-    global width, height
-    if cap.get(3) < upscaled_image.get(3):
-        width = cap.get(3)
-        height = cap.get(4)
-        #dsize = (height, width)
-        dsize = (width, height)
-        return cv2.resize(upscaled_image, dsize, fx=-scale, fy=-scale, interpolation=cv2.INTER_AREA)
-    else:
-        print("Failed to downsize : original width > than upsclaled image")"""
-
-
 def donwsize_video(cap, upscaled_image, scale):
     global width, height
     width = int(cap.get(3))
@@ -100,34 +90,23 @@ def donwsize_video(cap, upscaled_image, scale):
     #dsize = (height, width)
     dsize = (width, height)
     return cv2.resize(upscaled_image, dsize, fx=-scale, fy=-scale, interpolation=cv2.INTER_AREA)
-"""else:
-print("Failed to downsize : original width > than upsclaled image")"""
 
+
+# Resize en fonction des resolutions (du dictionnaire STD_DIMENSIONS) #
 
 def resize_image(image, new_size, scale_percent=100):
-    # for standard size
-    # src = cv2.imread('D:/cv2-resize-image-original.png', cv2.IMREAD_UNCHANGED)
-
     global width, height
-
-    # size_factor = int(new_size/image.shape[1])
-
     if new_size in STD_DIMENSIONS:
         width, height = STD_DIMENSIONS[new_size]
     elif 0 < scale_percent:
         width = int(image.shape[1] * scale_percent / 100)
         height = int(image.shape[0] * scale_percent / 100)
-
-    # dsize
-    #dsize = (height, width)
     dsize = (width, height)
-    # resize image
     return cv2.resize(image, dsize)
 
 
 def resize_video(cap, image, new_size, scale_percent=100):
     global width, height
-
     if new_size in STD_DIMENSIONS:
         width, height = STD_DIMENSIONS[new_size]
     elif 0 < scale_percent:
@@ -137,59 +116,45 @@ def resize_video(cap, image, new_size, scale_percent=100):
     return cv2.resize(image, dsize)
 
 
-def scale_choice(image, new_size_width):
-    print("original image height  = "+str(image.shape[1]))
+    # Renvoi le scale en fonction du rapport entre l'image d'origine et la taille souhaitée #
+
+def scale_choice(image_name, new_size) -> int:
+    if file_type(image_name) == "image":
+        return image_scale_choice(image_name, new_size)
+    elif file_type(image_name) == "video":
+        return video_scale_choice(image_name, new_size)
+
+# Si le type de fichier = image
+def image_scale_choice(image, new_size_width):
+    print("original image height  = "+str(cv2.imread(image).shape[1]))
     print("new_size_width = "+str(new_size_width))
     global size_factor
-    if new_size_width > image.shape[1]:
-        size_factor = float(new_size_width/image.shape[1])
+    if new_size_width > cv2.imread(image).shape[1]:
+        size_factor = float(new_size_width/cv2.imread(image).shape[1])
     print("size factor = "+str(size_factor))
-
-    #with switch(size_factor) as case:
     if size_factor <= 2.0:
         return 2
-
     if 2 < size_factor <= 3.0:
         return 3
-
     if 3 < size_factor <= 4.0:
         return 4
-
     if size_factor > 4.0:
         return 8
 
-
+# Si le type de fichier = video
 def video_scale_choice(cap, new_size_height):
-    size_factor = int(new_size_height/cap.get(4))
+    size_factor = int(new_size_height/cv2.VideoCapture(cap).get(4))
     print("size factor = "+str(size_factor))
-
-    #with switch(size_factor) as case:
     if size_factor <= 2:
         return 2
-
     if 2 < size_factor <= 3:
         return 3
-
     if 3 < size_factor <= 4:
         return 4
-
     if size_factor > 4:
         return 8
 
-
-def model_choice(type_of_image, scale):
-    if type_of_image == 'video':
-        if scale <= 4:
-            return "espcn"
-        else:
-            return "lapsrn"
-    if type_of_image == 'image':
-        if scale <= 4:
-            return "edsr"
-        else:
-            return "lapsrn"
-
-
+# Renvoi le chemin du modèle choisi
 def construct_model_path(model, scale):
     if model == "lapsrn":
         return "./models/LapSRN_x" + str(scale) + ".pb"

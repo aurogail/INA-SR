@@ -1,21 +1,13 @@
 import cv2 as cv
-import ButtonsToVar
-import resizeImageAndVideo as rsiv
-# import numpy
-# import matplotlib.pyplot as plt
 import FileType
-import os
 import shutil
-import time
 
-
+#Classe regroupant les fonctions applicables à une image cv2 -> instances de "presque" type cv2
 class UpscaleImage:
-
+    #attributs des Objets UpscaleImage
     name: str
     resolution: str
     output_res: str
-    #width: int
-    #height: int
     model_path: str
     model_name: str
     model_scale: int
@@ -23,12 +15,11 @@ class UpscaleImage:
     type_of_image: str
     fps: int
 
+    #initialisation des attributs (publiques)
     def __init__(self, name, resolution, output_res, model_path,  model_name, model_scale, output_name, type_of_image, fps):
         self.name = name
         self.resolution = resolution
         self.output_res = output_res
-        #self.width = width
-        #self.height = height
         self.model_path = model_path
         self.model_name = model_name
         self.model_scale = model_scale
@@ -36,23 +27,25 @@ class UpscaleImage:
         self.type_of_image = type_of_image
         self.fps = fps
 
-    # methode read
+        # """ Methodes """
+    # Renvoi une image cv2 à partir du nom du fichier (lecture du fichier)
     def read_image(self, path):
         self.name = path
         return cv.imread(self.name)
 
+    # Renvoi le type de fichier (image ou vidéo en fonction de l'extension)
     def get_file_type(self):
-        return rsiv.file_type(self.name)
+        return FileType.file_type(self.name)
 
+    # Renvoi une frame cv2
     def capture_video(self, path):
         self.name = path
         return cv.VideoCapture(self.name)
 
-    # methode main de l'upscale
+    # Renvoi l'image upscaled si le type de fichier == image
     def upscale_image(self, input_path):
         global sr
         sr = cv.dnn_superres.DnnSuperResImpl_create()
-        #with switch(self.type_of_image) as case:
         if self.type_of_image == 'image':
             image = self.read_image(input_path)
             sr.readModel(self.model_path)
@@ -60,160 +53,50 @@ class UpscaleImage:
             print('Shape of Original Image: {}'.format(image.shape))
             return sr.upsample(image)
 
+    # Renvoi une frame upscaled si le type de fichier == video
+    def upscale_video_frame(self, image):
+        global sr
+        sr = cv.dnn_superres.DnnSuperResImpl_create()
         if self.type_of_image == 'video':
             """dim = rsiv.get_dims(self.capture_video(), res=self.resolution)
             video_type_cv2 = rsiv.get_video_type(self.name)
             out = cv.VideoWriter(self.output_name, video_type_cv2, self.fps, dim)"""
-            while True:
-                start = time.time()
-                ret, image = self.capture_video(input_path).read()
-                # si fin video
-                if not ret:
-                    break
 
-                sr.readModel(self.model_path)
-                sr.setModel(self.model_name, self.model_scale)
+            #start = time.time()
+            #image = cap.read()
+            # si fin video
 
-                #out.write(image)
-
-                #fps_c = (1.0 / (time.time() - start))
-                #cv.putText(image, 'FPS: {:.2f}'.format(self.fps), (10, 20), cv.FONT_HERSHEY_SIMPLEX, 0.8, (255, 20, 55), 1)
-
-                """cv.imshow("Upscaled frame", image)
-                print('Shape of Original Image: {}'.format(image.shape))
-                if cv.waitKey(20) & 0xFF == ord('q'):
-                    break"""
-
-            """self.capture_video(input_path).release()
-            out.release()
-            cv.destroyAllWindows()"""
+            sr.readModel(self.model_path)
+            sr.setModel(self.model_name, self.model_scale)
             return sr.upsample(image)
 
+    # Sauvegarde l'image upscaled et la renvoi
     def save_upscaled_image(self, in_path, out_path):
         upscaled = self.upscale_image(in_path)
-        downsized_image = rsiv.donwsize(self.read_image(in_path), upscaled, self.model_scale)
-        """resize = rsiv.resize_image(self.read_image(in_path), "", 200)"""
-        outpath = out_path + self.output_name
-        """cv.imshow("origin", self.read_image(in_path))
-        print("showing origin")"""
-        """cv.imshow("resize", resize)
-        print("showing resize")"""
-        """cv.imshow("upscaled", upscaled)
-        print("showing upscaled")"""
-        """cv.imshow("downsized", downsized_image)
-        print("showing downsized")"""
-        cv.imwrite(outpath, downsized_image)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
-
+        print("Saving Upscale -> in_path : "+in_path)
+        print("upscaled :" + str(upscaled))
+        print("out_path : "+out_path)
+        cv.imwrite(out_path, upscaled)
+        #copy_to_folder_media(out_path, "./results/")
         print('Shape of Super Resolution Image: {}'.format(upscaled.shape))
+        return upscaled
 
-    def save_upscaled_video(self, in_path, out_path):
+    # Sauvegarde la vidéo upscale (pas encore utilisée)
+    def save_upscaled_video(self, cap: cv.VideoCapture, ret, out_path):
         outpath = out_path + self.output_name
-        dim = rsiv.get_dims(self.capture_video(in_path), res=self.resolution)
-        video_type_cv2 = rsiv.get_video_type(self.name)
+        dim = FileType.get_dims(cap, res=self.resolution)
+        video_type_cv2 = FileType.get_video_type(self.name)
         out = cv.VideoWriter(outpath, video_type_cv2, self.fps, dim)
-        out.write(self.upscale_image(in_path))
-        self.capture_video(input_path).release()
+        while cap.isOpened():
+            if not ret:
+                break
+            out.write(self.upscale_video_frame(cap))
+        self.capture_video(self.name).release()
         out.release()
         cv.destroyAllWindows()
 
-    # def save_upscaled_video(self, cap):
-        # self.VideoWriter(self.name, videoTypeCV2, fps, dim)
 
-
-# imageName: str = "./bird2.JPG"
-# outputName: str = "./upscaled.png"
-# path: str = "models/EDSR_x4.pb"
-# model: str = "edsr"
-# modelscale: int = 4
-# model for video : ESPCN
-# def resize_image(image_name, output_size):
-# control de la size ?
-# scale ?
-# matplotlib ?
-
-# boutons => creer des instances avec les choix
-# var des boutons -> switch case -> attributs des instances
-#name: str
-##resolution: str
-#output_res: str
-##width: int
-##height: int
-#model_path: str
-#model_name: str
-#model_scale: int
-#output_name: str
-#type_of_image: str
-#fps: int
-
-
-file_name = "bird2.jpg"
-filename, ext = os.path.splitext(file_name)
-#fps = 0
-out_res = '1080p'
-#outname = ""
-input_path = "test_media/"
-output_path = "./results/"
-destination_de_copie = "./test_media/"
-#upscaled_image = UpscaleImage(name='', resolution='', output_name='', output_res='', model_name='', model_path='', model_scale='', type_of_image='', fps=0)
-#upscaled_video = UpscaleImage(name='', resolution='', output_name='', output_res='', model_name='', model_path='', model_scale='', type_of_image='', fps=0)
-
-"""inputpath = input_path + file_name
-modelpath = "./models/EDSR_x4.pb"
-modelname = "edsr"
-modelscale = 4
-out_name = filename + "_to_" + out_res + "_with_" + modelname + ext
-outpath = output_path + out_name
-sr = cv.dnn_superres.DnnSuperResImpl_create()
-image = cv.imread(inputpath)
-sr.readModel(modelpath)
-sr.setModel(modelname, modelscale)
-#print('Shape of Original Image: {}'.format(image.shape))
-out = sr.upsample(image)
-cv.imwrite(outpath, out)"""
-
-
+# Fonction qui copie un fichier vers une destination
 def copy_to_folder_media(filename, destination):
     shutil.move(filename, destination)
 
-
-# a faire selon type de fichier (image ou video)
-# a faire pendant que la page est ouverte ? While x.isOpended() ?
-def upscale_main(UpscaleImageObject):
-    if FileType.file_type(UpscaleImageObject.name) == 'image':
-        print("Type of file = "+rsiv.file_type(UpscaleImageObject.name))
-        #upscaled_image = UpscaleImage(name=file_name, resolution='', output_name='', output_res='', model_name='edsr', model_path='', model_scale=4, type_of_image='image', fps=0)
-        #upscaled_image.name = file_name
-        #upscaled_image.output_name = out_name
-        #upscaled_image.type_of_image = 'image'
-        UpscaleImageObject.output_res = out_res
-        if len(UpscaleImageObject.output_res) != 0:
-            UpscaleImageObject.model_scale = rsiv.scale_choice(UpscaleImageObject.read_image(input_path), rsiv.get_dims(UpscaleImageObject.read_image(UpscaleImageObject.name), UpscaleImageObject.output_res)[1])
-            print("scale choice = "+str(UpscaleImageObject.model_scale))
-            UpscaleImageObject.model_name = rsiv.model_choice('image', UpscaleImageObject.model_scale)
-            print("Model choice : "+str(UpscaleImageObject.model_name))
-        UpscaleImageObject.model_path = rsiv.construct_model_path(UpscaleImageObject.model_name, UpscaleImageObject.model_scale)
-        UpscaleImageObject.output_name = filename + "_to_" + out_res + "_with_" + UpscaleImageObject.model_name + ext
-        #upscaled_image.upscale_image(input_path)
-        #rsiv.resize_image(upscaled_image.save_upscaled_image(), upscaled_image.output_res)
-        UpscaleImageObject.save_upscaled_image(input_path, output_path)
-
-    if FileType.file_type(UpscaleImageObject.name) == 'video':
-        #upscaled_video = UpscaleImage(name=file_name, resolution='', output_name='', output_res='', model_name='espcn', model_path='', model_scale=4, type_of_image='video', fps=0)
-        #upscaled_video.name = file_name
-        #upscaled_video.output_name = out_name
-        #upscaled_video.type_of_image = 'video'
-        UpscaleImageObject.fps = UpscaleImageObject.capture_video(input_path).get(cv.CAP_PROP_FPS)
-
-        #upscaled_video.output_res = out_res
-        #upscaled_video.model_scale = rsiv.video_scale_choice(upscaled_video.capture_video(input_path), rsiv.get_dims(upscaled_video.capture_video(input_path), upscaled_video.output_res)[1])
-        #upscaled_video.model_name = rsiv.model_choice('video', upscaled_video.model_scale)
-        UpscaleImageObject.model_path = rsiv.construct_model_path(UpscaleImageObject.model_name, UpscaleImageObject.model_scale)
-        UpscaleImageObject.output_name = filename + "_to_" + out_res + "_with_" + UpscaleImageObject.model_name + ext
-        #upscaled_video.upscale_image(output_path)
-        #rsiv.resize_video()
-        UpscaleImageObject.save_upscaled_video(input_path, output_path)
-
-
-# resize si bouton d'une res standard, sinon, ne pas resize ? mettre x2 x4 x8 ?
